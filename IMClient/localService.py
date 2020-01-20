@@ -1,4 +1,5 @@
 import requests
+from pprint import pprint
 
 
 class service():
@@ -18,3 +19,10 @@ class service():
     def welcome(cls):
         print('欢迎使用Bubble {}'.format(cls.version()))
         cls.updateChecker()
+
+    @staticmethod
+    def showMenu():
+        print('menu')
+        menu = {1: 'chat', 2: 'friend list', 3: 'setup'}
+        for key, value in zip(menu.keys(), menu.values()):
+            print(key, value)
