@@ -17,7 +17,7 @@ class IMServerSocket():
         self._socket = socket.socket()
         self._socket.bind((self.__address, self.__port))
 
-    def mainloop(self):
+    def mainLoop(self):
         self._socket.listen(5)
         logging.info('Listening {} on Port {}'.format(self.__address, self.__port))
         while True:
@@ -31,6 +31,20 @@ class IMServerSocket():
             skt.sendall('OK'.encode())
             msg = self.handle(skt.recv(contentLength).decode('UTF-8')).encode()
 
+            '''**********数据包长度计算**********'''
+            length = len(msg)
+            lengthInfo = {
+                'msg': {
+                    'infoProtocol': infoProtocol.contentLength.value,
+                    'length': length
+                },
+                "userID": 0,
+                "time": time.time(),
+                "protocol": serverProtocol.reinfo.value
+            }
+            packageLength = json.dumps({'content': lengthInfo, 'hash': md5Calc(lengthInfo)})
+            skt.sendall(packageLength.encode())
+            skt.recv(1024)
             skt.sendall(msg)
             skt.close()
 
@@ -60,7 +74,7 @@ class IMServerSocket():
             elif protocol:
                 pass
 
-            text['user'] = msg['userID']
+            text['user'] = 0
             text['time'] = time.time()
         else:
             text['msg'] = {'infoProtocol': infoProtocol.invaildMessage}

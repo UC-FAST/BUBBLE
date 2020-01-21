@@ -22,9 +22,13 @@ class IMClientSocket:
         self._socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self._socket.bind(('127.0.0.1', 5280))
         self._socket.connect((self.__address, self.__port))
+        recv = None
         for i in msg:
             self._socket.sendall(i.encode())
-            msg = self._socket.recv(1024).decode('UTF-8')
+            recv = self._socket.recv(1024).decode('UTF-8')
+        self._socket.sendall(b'OK')
+        recv = json.loads(recv)
+        msg = self._socket.recv(recv['content']['msg']['length'])
         self._socket.close()
         return msg
 
