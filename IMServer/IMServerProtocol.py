@@ -18,6 +18,7 @@ class serverProtocol(Enum):
     refile = 13  # 文件
     reinfo = 14  # 服务器端消息
     reheartbeat = 15  # 维持心跳
+    
 
 
 class infoProtocol(Enum):

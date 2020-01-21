@@ -26,7 +26,7 @@ class IMClientSocket:
         for i in msg:
             self._socket.sendall(i.encode())
             recv = self._socket.recv(1024).decode('UTF-8')
-        self._socket.sendall(b'OK')
+        self._socket.sendall(b'OK')#占位消息
         recv = json.loads(recv)
         msg = self._socket.recv(recv['content']['msg']['length'])
         self._socket.close()

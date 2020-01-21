@@ -23,15 +23,17 @@ class IMServerSocket():
         while True:
             skt, addr = self._socket.accept()
             logging.info(str(skt))
+            """**********从客户端获取下一条数据的长度**********"""
             lengthInfo = json.loads(skt.recv(1024).decode('UTF-8'))
             contentLength = None
             if lengthInfo['content']['protocol'] == serverProtocol.info.value and \
                     lengthInfo['content']['msg']['infoProtocol'] == infoProtocol.contentLength.value:
                 contentLength = lengthInfo['content']['msg']['length']
-            skt.sendall('OK'.encode())
+            skt.sendall('OK'.encode())  # 占位消息
+            """**********处理数据**********"""
             msg = self.handle(skt.recv(contentLength).decode('UTF-8')).encode()
 
-            '''**********数据包长度计算**********'''
+            '''**********服务器数据包长度计算**********'''
             length = len(msg)
             lengthInfo = {
                 'msg': {
@@ -43,12 +45,13 @@ class IMServerSocket():
                 "protocol": serverProtocol.reinfo.value
             }
             packageLength = json.dumps({'content': lengthInfo, 'hash': md5Calc(lengthInfo)})
-            skt.sendall(packageLength.encode())
-            skt.recv(1024)
+            skt.sendall(packageLength.encode())  # 发送数据长度消息
+            skt.recv(1024)  # 接收占位消息
             skt.sendall(msg)
             skt.close()
 
-    def login(self, msg):
+    def loginAuthorize(self, msg):
+        '''账号密码数据校验'''
         with open('./IMServer/authorize.json') as f:
             content = json.load(f)
         try:
@@ -62,11 +65,11 @@ class IMServerSocket():
         logging.info('Message {}'.format(msg))
         msg = json.loads(msg)
         text = dict()
-        if isVaildData(msg):
+        if isVaildData(msg):  # 数据合法性校验
             msg = msg['content']
             protocol = msg['protocol']
-            if protocol == serverProtocol.login.value:
-                text['msg'] = {'login': self.login(msg['msg'])}
+            if protocol == serverProtocol.login.value:  # 登录
+                text['msg'] = {'login': self.loginAuthorize(msg['msg'])}
                 text['protocol'] = serverProtocol.relogin
             elif protocol == serverProtocol.info.value:
                 text['msg'] = {}
@@ -74,7 +77,7 @@ class IMServerSocket():
             elif protocol:
                 pass
 
-            text['user'] = 0
+            text['user'] = 0  # 服务器ID为0
             text['time'] = time.time()
         else:
             text['msg'] = {'infoProtocol': infoProtocol.invaildMessage}
