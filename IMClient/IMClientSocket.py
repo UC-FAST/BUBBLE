@@ -24,15 +24,16 @@ class IMClientSocket:
         self._socket.connect((self.__address, self.__port))
         recv = None
         for i in msg:
-            self._socket.sendall(i.encode())
-            recv = self._socket.recv(1024).decode('UTF-8')
-        self._socket.sendall(b'OK')#占位消息
+            self._socket.sendall(i.encode())  # 第一次发送数据包长度消息，第二次发送数据包
+            recv = self._socket.recv(1024).decode('UTF-8')  # 第一次接收服务器占位消息，第二次接收服务器数据包长度消息
+        self._socket.sendall(b'OK')  # 占位消息
         recv = json.loads(recv)
         msg = self._socket.recv(recv['content']['msg']['length'])
         self._socket.close()
         return msg
 
     def send(self, protocol, user, msg):
+        '''对socket.send的简单封装'''
         content = dict()
         content['msg'] = msg
         content['userID'] = user
