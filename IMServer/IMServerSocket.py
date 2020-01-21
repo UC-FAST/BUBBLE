@@ -23,7 +23,13 @@ class IMServerSocket():
         while True:
             skt, addr = self._socket.accept()
             logging.info(str(skt))
-            msg = self.handle(skt.recv(10240).decode('UTF-8')).encode()
+            lengthInfo = json.loads(skt.recv(1024).decode('UTF-8'))
+            contentLength = None
+            if lengthInfo['content']['protocol'] == serverProtocol.info.value and \
+                    lengthInfo['content']['msg']['infoProtocol'] == infoProtocol.contentLength.value:
+                contentLength = lengthInfo['content']['msg']['length']
+            skt.sendall('OK'.encode())
+            msg = self.handle(skt.recv(contentLength).decode('UTF-8')).encode()
             skt.sendall(msg)
             skt.close()
 

@@ -23,4 +23,5 @@ class clientProtocol(Enum):
 
 class infoProtocol(Enum):
     invaildMessage = 0
-    friendList = 1
+    contentLength = 1
+    friendList = 2
