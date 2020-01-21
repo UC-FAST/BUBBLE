@@ -17,7 +17,7 @@ class IMServerSocket():
         self._socket = socket.socket()
         self._socket.bind((self.__address, self.__port))
 
-    def receive(self):
+    def mainloop(self):
         self._socket.listen(5)
         logging.info('Listening {} on Port {}'.format(self.__address, self.__port))
         while True:
@@ -30,6 +30,7 @@ class IMServerSocket():
                 contentLength = lengthInfo['content']['msg']['length']
             skt.sendall('OK'.encode())
             msg = self.handle(skt.recv(contentLength).decode('UTF-8')).encode()
+
             skt.sendall(msg)
             skt.close()
 
