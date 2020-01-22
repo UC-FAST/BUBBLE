@@ -9,7 +9,7 @@ if __name__ == '__main__':
             id = input('User ID: ')
             pwd = input('Password: ')
             a.login(872702913, '(imp@h01)')
-            a.userList()
+            print(a.getFriendList())
             im.service.showMenu()
             choice=input('>')
         except loginError:
