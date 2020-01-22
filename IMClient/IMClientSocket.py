@@ -1,7 +1,6 @@
 import time
 import socket
 import json
-from enum import Enum
 from IMClient.IMClientProtocol import *
 from IMClient.clientAuthorize import md5Calc
 
@@ -20,7 +19,7 @@ class IMClientSocket:
     def __sendmsg(self, *msg):
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self._socket.bind(('127.0.0.1', 5280))
+        self._socket.bind(('127.0.0.1', 13280))
         self._socket.connect((self.__address, self.__port))
         recv = None
         for i in msg:
@@ -29,7 +28,7 @@ class IMClientSocket:
         self._socket.sendall(b'OK')  # 占位消息
         recv = json.loads(recv)
         msg = self._socket.recv(recv['content']['msg']['length'])
-        self._socket.close()
+        #self._socket.shutdown(socket.SHUT_RDWR)
         return msg
 
     def send(self, protocol, user, msg):

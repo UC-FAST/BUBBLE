@@ -75,6 +75,12 @@ class IMServerSocket():
             elif protocol == serverProtocol.info.value:
                 if msg['msg']['infoProtocol'] == infoProtocol.friendList.value:
                     text['msg'] = {'friendList': server.getFrendList(msg['userID'])}
+                elif msg['msg']['infoProtocol'] == infoProtocol.userRegister.value:
+                    try:
+                        server.register(msg['msg']['userID'], msg['msg']['password'])
+                        text['msg'] = True
+                    except KeyError:
+                        text['msg'] = 'User already exist.'
 
                 text['protocol'] = serverProtocol.reinfo
             elif protocol:

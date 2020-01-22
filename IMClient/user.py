@@ -1,6 +1,7 @@
 from IMClient.IMClientProtocol import *
 from IMClient.IMClientSocket import IMClientSocket
 from IMClient.clientAuthorize import *
+from IMClient.clientAuthorize import md5Calc
 
 
 class loginError(Exception):
@@ -33,6 +34,13 @@ class userHandle():
         for _ in msg['content']['msg']['friendList']:
             self.friendList.add(_)
         return self.friendList
+
+    def userRegister(self, userID, password):
+        msg = self.user.send(
+            clientProtocol.info,
+            userID,
+            {'infoProtocol': infoProtocol.userRegister.value, 'userID': userID, 'password': md5Calc(password)})
+        return msg['content']['msg']
 
     def __repr__(self):
         return '<User: {} isLogin: {}'.format(self.userID, self.isLogin)

@@ -26,3 +26,4 @@ class infoProtocol(Enum):
     contentLength=1
     friendList = 2
     addFriend=3
+    userRegister=4
