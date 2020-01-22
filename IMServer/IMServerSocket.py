@@ -5,6 +5,7 @@ import logging
 
 from IMServer.IMServerProtocol import *
 from IMServer.serverAuthorize import *
+from . import server
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -72,7 +73,9 @@ class IMServerSocket():
                 text['msg'] = {'login': self.loginAuthorize(msg['msg'])}
                 text['protocol'] = serverProtocol.relogin
             elif protocol == serverProtocol.info.value:
-                text['msg'] = {}
+                if msg['msg']['infoProtocol'] == infoProtocol.friendList.value:
+                    text['msg'] = {'friendList': server.getFrendList(msg['userID'])}
+
                 text['protocol'] = serverProtocol.reinfo
             elif protocol:
                 pass

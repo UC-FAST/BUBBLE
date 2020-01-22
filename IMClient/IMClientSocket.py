@@ -24,7 +24,7 @@ class IMClientSocket:
         self._socket.connect((self.__address, self.__port))
         recv = None
         for i in msg:
-            self._socket.sendall(i.encode())  # 第一次发送数据包长度消息，第二次发送数据包
+            self._socket.sendall(i)  # 第一次发送数据包长度消息，第二次发送数据包
             recv = self._socket.recv(1024).decode('UTF-8')  # 第一次接收服务器占位消息，第二次接收服务器数据包长度消息
         self._socket.sendall(b'OK')  # 占位消息
         recv = json.loads(recv)
@@ -53,4 +53,4 @@ class IMClientSocket:
             "protocol": clientProtocol.info.value
         }
         packageLength = json.dumps({'content': lengthInfo, 'hash': md5Calc(lengthInfo)})
-        return json.loads(self.__sendmsg(packageLength, package))
+        return json.loads(self.__sendmsg(packageLength.encode(), package.encode()))
