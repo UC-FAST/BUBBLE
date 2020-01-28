@@ -33,7 +33,16 @@ class IMServerSocket():
         self._socket = socket.socket()
         self._socket.bind((self.__address, self.__port))
 
+    def userListCleanup(self):
+        while True:
+            time.sleep(30)
+            self.userList.cleanUp()
+            time.sleep(30)
+
     def mainLoop(self):
+        """服务器套接字接收的主循环"""
+        """我已经尽量将注释写清楚了，但仍然不建议修改代码"""
+        """这是座屎山"""
         self._socket.listen(5)
         logging.info('Listening {} on Port {}'.format(self.__address, self.__port))
         while True:
@@ -47,7 +56,7 @@ class IMServerSocket():
                 contentLength = lengthInfo['content']['msg']['length']
             skt.sendall('OK'.encode())  # 占位消息
             """**********处理数据**********"""
-            msg = msgHandle.handle(skt.recv(contentLength).decode('UTF-8')).encode()
+            msg = self.handle(skt.recv(contentLength).decode('UTF-8')).encode()
 
             '''**********服务器数据包长度计算**********'''
             length = len(msg)
@@ -65,3 +74,36 @@ class IMServerSocket():
             skt.recv(1024)  # 接收占位消息
             skt.sendall(msg)
             skt.close()
+
+    def handle(self, msg):
+        if not msg:
+            return None
+        logging.info('Message {}'.format(msg))
+        msg = json.loads(msg)
+        text = dict()
+        if isVaildData(msg):  # 数据合法性校验
+            msg = msg['content']
+            protocol = msg['protocol']
+            if protocol == serverProtocol.login.value:  # 登录
+                state = msgHandle.loginAuthorize(msg['msg']['userID'], msg['msg']['password'])
+                text['msg'] = {'login': state}
+                text['protocol'] = serverProtocol.relogin
+                if state:
+                    self.userList.addUser(msg['msg']['userID'])
+            elif protocol == serverProtocol.info.value:
+                if msg['msg']['infoProtocol'] == infoProtocol.friendList.value:
+                    text['msg'] = {'friendList': msgHandle.getFriendList(msg['userID'])}
+                elif msg['msg']['infoProtocol'] == infoProtocol.userRegister.value:
+                    text['msg'] = msgHandle.register(msg['msg']['userID'], msg['msg']['password'])
+                text['protocol'] = serverProtocol.reinfo
+            elif protocol:
+                pass
+
+            text['user'] = 0  # 服务器ID为0
+            text['time'] = time.time()
+        else:
+            text['msg'] = {'infoProtocol': infoProtocol.invaildMessage}
+            text['protocol'] = serverProtocol.reinfo
+        text = packUp(text)
+        logging.info('Return {}'.format(str(text)))
+        return dumps(text)
