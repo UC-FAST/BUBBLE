@@ -25,12 +25,12 @@ class userList():
                 try:
                     self.delUser(index)
                     logger.info('User {} Screamed Ahhhhh!'.format(index))
-                except RuntimeError:
-                    pass
-        print(self.userList)
+                except Exception as e:
+                    logger.warning('{}'.format(e))
 
     def update(self, userID):
         self.userList_[userID] = int(time())
+        logger.info('{} GOT a New Life'.format(userID))
 
     @property
     def userList(self):
