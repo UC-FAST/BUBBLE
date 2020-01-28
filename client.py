@@ -11,7 +11,7 @@ if __name__ == '__main__':
             if choice == '1':
                 id = input('User ID: ')
                 pwd = input('Password: ')
-                a.login(872702913, '(imp@h01)')
+                print(a.login(872702913, '(imp@h01)'))
                 print(a.getFriendList())
                 im.showMainMenu()
                 choice = input('>')

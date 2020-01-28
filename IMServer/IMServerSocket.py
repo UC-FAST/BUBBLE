@@ -6,6 +6,7 @@ from os.path import exists
 from IMServer.IMServerProtocol import *
 from IMServer.serverAuthorize import *
 from . import server
+from . import userList
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -21,9 +22,12 @@ class IMServerSocket():
             cursor.execute('CREATE TABLE userMSG(toUser PRIMARY KEY NOT NULL ,msg,fromUser,time)')
             cursor.execute(
                 'INSERT INTO  userAuthorize (id, password) VALUES (872702913,"3b2fce04224301f9db63a5443bc02869")')
+            cursor.execute(
+                'INSERT INTO  userInfo (id, name, sex, friends) VALUES (872702913,"yang",0,"123,456")')
             cursor.close()
             db.commit()
             db.close()
+        self.userList = userList.userList()
         self.__address = address
         self.__port = port
         self._socket = socket.socket()
@@ -72,18 +76,16 @@ class IMServerSocket():
             msg = msg['content']
             protocol = msg['protocol']
             if protocol == serverProtocol.login.value:  # 登录
-                text['msg'] = {'login': server.loginAuthorize(msg['msg']['userID'], msg['msg']['password'])}
+                state = server.loginAuthorize(msg['msg']['userID'], msg['msg']['password'])
+                text['msg'] = {'login': state}
                 text['protocol'] = serverProtocol.relogin
+                if state:
+                    print(msg['userID'], type(msg['userID']))
             elif protocol == serverProtocol.info.value:
                 if msg['msg']['infoProtocol'] == infoProtocol.friendList.value:
-                    text['msg'] = {'friendList': server.getFrendList(msg['userID'])}
+                    text['msg'] = {'friendList': server.getFriendList(msg['userID'])}
                 elif msg['msg']['infoProtocol'] == infoProtocol.userRegister.value:
-                    try:
-                        server.register(msg['msg']['userID'], msg['msg']['password'])
-                        text['msg'] = True
-                    except KeyError:
-                        text['msg'] = 'User already exist.'
-
+                    text['msg'] = server.register(msg['msg']['userID'], msg['msg']['password'])
                 text['protocol'] = serverProtocol.reinfo
             elif protocol:
                 pass

@@ -26,7 +26,6 @@ def loginAuthorize(userID, password):
         return False
     db = sqlite3.connect('IMServerUser.db')
     cursor = db.cursor()
-    print(userID)
     cursor.execute('SELECT password FROM userAuthorize WHERE id=?', (userID,))
     pwd = cursor.fetchall()
     cursor.close()
@@ -74,7 +73,6 @@ def addFriend(userID, *friend):
 def hasUser(userID):
     db = sqlite3.connect('IMServerUser.db')
     cursor = db.cursor()
-    print(userID)
     cursor.execute('SELECT id FROM userAuthorize WHERE id=?', (userID,))
     result = cursor.fetchall()
     cursor.close()
@@ -83,7 +81,8 @@ def hasUser(userID):
     return result
 
 
-def getFrendList(userID):
+def getFriendList(userID):
+    print(userID)
     db = sqlite3.connect('IMServerUser.db')
     cursor = db.cursor()
     cursor.execute('SELECT friends FROM userInfo WHERE id=?', (userID,))

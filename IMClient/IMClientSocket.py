@@ -31,11 +31,11 @@ class IMClientSocket:
         # self._socket.shutdown(socket.SHUT_RDWR)
         return msg
 
-    def send(self, protocol, user, msg):
+    def send(self, protocol, userID, msg):
         """对socket.send的简单封装"""
         content = dict()
         content['msg'] = msg
-        content['userID'] = user
+        content['userID'] = int(userID)
         content['protocol'] = protocol.value
         content['time'] = time.time()
         package = {'content': content, 'hash': md5Calc(content)}
@@ -47,7 +47,7 @@ class IMClientSocket:
                 'infoProtocol': infoProtocol.contentLength.value,
                 'length': length
             },
-            "userID": user,
+            "userID": userID,
             "time": time.time(),
             "protocol": clientProtocol.info.value
         }

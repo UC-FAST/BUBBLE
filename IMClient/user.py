@@ -17,7 +17,6 @@ class userHandle():
         self.friendList = set()
 
     def login(self, userID, password):
-        #userID = str(userID)
         msg = self.user.send(clientProtocol.login, userID, {'userID': userID, 'password': md5Calc(password)})
         if msg['content']['protocol'] == clientProtocol.reinfo.value:
             if msg['content']['msg']['infoProtocol'] == infoProtocol.invaildMessage.value:
@@ -36,10 +35,12 @@ class userHandle():
         return self.friendList
 
     def userRegister(self, userID, password):
+        userID = int(userID)
         msg = self.user.send(
             clientProtocol.info,
             userID,
-            {'infoProtocol': infoProtocol.userRegister.value, 'userID': userID, 'password': md5Calc(password)})
+            {'infoProtocol': infoProtocol.userRegister.value, 'userID': userID, 'password': md5Calc(password)}
+        )
         return msg['content']['msg']
 
     def __repr__(self):
