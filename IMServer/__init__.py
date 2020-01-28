@@ -1,3 +1,3 @@
 from .IMServerProtocol import *
 from .IMServerSocket import *
-from .server import *
+from .msgHandle import *

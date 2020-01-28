@@ -1,4 +1,10 @@
+# 消息处理模块
+
 import sqlite3
+import time
+import logging
+from IMServer.IMServerProtocol import *
+from IMServer.serverAuthorize import *
 import json
 
 
@@ -87,3 +93,37 @@ def getFriendList(userID):
     cursor = db.cursor()
     cursor.execute('SELECT friends FROM userInfo WHERE id=?', (userID,))
     return _friendListDecode(cursor.fetchall()[0][0])
+
+
+def handle(msg):
+    if not msg:
+        return None
+    logging.info('Message {}'.format(msg))
+    msg = json.loads(msg)
+    text = dict()
+    if isVaildData(msg):  # 数据合法性校验
+        msg = msg['content']
+        protocol = msg['protocol']
+        if protocol == serverProtocol.login.value:  # 登录
+            state = loginAuthorize(msg['msg']['userID'], msg['msg']['password'])
+            text['msg'] = {'login': state}
+            text['protocol'] = serverProtocol.relogin
+            if state:
+                print(msg['userID'], type(msg['userID']))
+        elif protocol == serverProtocol.info.value:
+            if msg['msg']['infoProtocol'] == infoProtocol.friendList.value:
+                text['msg'] = {'friendList': getFriendList(msg['userID'])}
+            elif msg['msg']['infoProtocol'] == infoProtocol.userRegister.value:
+                text['msg'] = register(msg['msg']['userID'], msg['msg']['password'])
+            text['protocol'] = serverProtocol.reinfo
+        elif protocol:
+            pass
+
+        text['user'] = 0  # 服务器ID为0
+        text['time'] = time.time()
+    else:
+        text['msg'] = {'infoProtocol': infoProtocol.invaildMessage}
+        text['protocol'] = serverProtocol.reinfo
+    text = packUp(text)
+    logging.info('Return {}'.format(str(text)))
+    return dumps(text)
