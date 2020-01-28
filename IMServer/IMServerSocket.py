@@ -19,7 +19,8 @@ class IMServerSocket():
             cursor.execute('CREATE TABLE userAuthorize(id PRIMARY KEY NOT NULL ,password TEXT(32))')
             cursor.execute('CREATE TABLE userInfo(id PRIMARY KEY NOT NULL ,name,sex INTEGER,friends)')
             cursor.execute('CREATE TABLE userMSG(toUser PRIMARY KEY NOT NULL ,msg,fromUser,time)')
-            cursor.execute('INSERT INTO  userAuthorize (id, password) VALUES (872702913,"3b2fce04224301f9db63a5443bc02869")')
+            cursor.execute(
+                'INSERT INTO  userAuthorize (id, password) VALUES (872702913,"3b2fce04224301f9db63a5443bc02869")')
             cursor.close()
             db.commit()
             db.close()
@@ -71,7 +72,7 @@ class IMServerSocket():
             msg = msg['content']
             protocol = msg['protocol']
             if protocol == serverProtocol.login.value:  # 登录
-                text['msg'] = {'login': server.loginAuthorize(msg['msg'])}
+                text['msg'] = {'login': server.loginAuthorize(msg['msg']['userID'], msg['msg']['password'])}
                 text['protocol'] = serverProtocol.relogin
             elif protocol == serverProtocol.info.value:
                 if msg['msg']['infoProtocol'] == infoProtocol.friendList.value:
