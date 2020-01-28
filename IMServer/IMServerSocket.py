@@ -1,8 +1,8 @@
 import socket
-import json
+import sqlite3
 import time
 import logging
-
+from os.path import exists
 from IMServer.IMServerProtocol import *
 from IMServer.serverAuthorize import *
 from . import server
@@ -13,6 +13,16 @@ logger = logging.getLogger(__name__)
 
 class IMServerSocket():
     def __init__(self, address, port):
+        if not exists('IMServerUser.db'):
+            db = sqlite3.connect('IMServerUser.db')
+            cursor = db.cursor()
+            cursor.execute('CREATE TABLE userAuthorize(id PRIMARY KEY NOT NULL ,password TEXT(32))')
+            cursor.execute('CREATE TABLE userInfo(id PRIMARY KEY NOT NULL ,name,sex INTEGER,friends)')
+            cursor.execute('CREATE TABLE userMSG(toUser PRIMARY KEY NOT NULL ,msg,fromUser,time)')
+            cursor.execute('INSERT INTO  userAuthorize (id, password) VALUES (872702913,"3b2fce04224301f9db63a5443bc02869")')
+            cursor.close()
+            db.commit()
+            db.close()
         self.__address = address
         self.__port = port
         self._socket = socket.socket()
@@ -51,15 +61,6 @@ class IMServerSocket():
             skt.sendall(msg)
             skt.close()
 
-    def loginAuthorize(self, msg):
-        '''账号密码数据校验'''
-        with open('./IMServer/authorize.json') as f:
-            content = json.load(f)
-        try:
-            return content[str(msg['userID'])] == msg['password']
-        except KeyError:
-            return False
-
     def handle(self, msg):
         if not msg:
             return None
@@ -70,7 +71,7 @@ class IMServerSocket():
             msg = msg['content']
             protocol = msg['protocol']
             if protocol == serverProtocol.login.value:  # 登录
-                text['msg'] = {'login': self.loginAuthorize(msg['msg'])}
+                text['msg'] = {'login': server.loginAuthorize(msg['msg'])}
                 text['protocol'] = serverProtocol.relogin
             elif protocol == serverProtocol.info.value:
                 if msg['msg']['infoProtocol'] == infoProtocol.friendList.value:

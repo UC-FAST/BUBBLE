@@ -16,6 +16,7 @@ if __name__ == '__main__':
                 im.showMainMenu()
                 choice = input('>')
             if choice == '2':
+                print('23')
                 userID = input('User ID: ')
                 pwd = input('Password: ')
                 msg=a.userRegister(userID, pwd)

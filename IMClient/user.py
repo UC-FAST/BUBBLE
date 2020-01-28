@@ -17,7 +17,7 @@ class userHandle():
         self.friendList = set()
 
     def login(self, userID, password):
-        userID = str(userID)
+        #userID = str(userID)
         msg = self.user.send(clientProtocol.login, userID, {'userID': userID, 'password': md5Calc(password)})
         if msg['content']['protocol'] == clientProtocol.reinfo.value:
             if msg['content']['msg']['infoProtocol'] == infoProtocol.invaildMessage.value:
