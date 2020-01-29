@@ -14,7 +14,7 @@ class userHandle():
         self.user = IMClientSocket()
         self.userID = None
         self.isLogin = False
-        self.friendList = set()
+        self.friendList = dict()
 
     def login(self, userID, password):
         msg = self.user.send(clientProtocol.login, userID, {'userID': userID, 'password': md5Calc(password)})
@@ -30,8 +30,7 @@ class userHandle():
 
     def getFriendList(self):
         msg = self.user.send(clientProtocol.info, self.userID, {'infoProtocol': infoProtocol.friendList.value})
-        for _ in msg['content']['msg']['friendList']:
-            self.friendList.add(_)
+        self.friendList.update(msg['content']['msg']['friendList'])
         return self.friendList
 
     def userRegister(self, userID, password):

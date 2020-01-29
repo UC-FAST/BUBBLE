@@ -52,6 +52,24 @@ def changeName(userID, name):
     db.close()
 
 
+def changeSex(userID, sex):
+    db = sqlite3.connect('IMServerUser.db')
+    cursor = db.cursor()
+    cursor.execute('UPDATE userInfo SET sex=? WHERE id=?', (sex, userID))
+    cursor.close()
+    db.commit()
+    db.close()
+
+
+def changePassword(userID, password):
+    db = sqlite3.connect('IMServerUser.db')
+    cursor = db.cursor()
+    cursor.execute('UPDATE userAuthorize SET password=? WHERE id=?', (password, userID))
+    cursor.close()
+    db.commit()
+    db.close()
+
+
 def addFriend(userID, *friend):
     db = sqlite3.connect('IMServerUser.db')
     cursor = db.cursor()
@@ -87,8 +105,8 @@ def getFriendList(userID):
     db = sqlite3.connect('IMServerUser.db')
     cursor = db.cursor()
     cursor.execute('SELECT friends FROM userInfo WHERE id=?', (userID,))
-    result = json.loads(cursor.fetchall()[0][0])
+    result = cursor.fetchall()[0][0]
     cursor.close()
     db.commit()
     db.close()
-    return result
+    return json.loads(result)

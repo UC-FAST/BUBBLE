@@ -20,13 +20,10 @@ class IMServerSocket():
             cursor.execute('CREATE TABLE userAuthorize(id PRIMARY KEY NOT NULL ,password TEXT(32))')
             cursor.execute('CREATE TABLE userInfo(id PRIMARY KEY NOT NULL ,name,sex INTEGER,friends)')
             cursor.execute('CREATE TABLE userMSG(toUser PRIMARY KEY NOT NULL ,msg,fromUser,time)')
-            cursor.execute(
-                'INSERT INTO  userAuthorize (id, password) VALUES (872702913,"3b2fce04224301f9db63a5443bc02869")')
-            cursor.execute(
-                'INSERT INTO  userInfo (id, name, sex, friends) VALUES (872702913,"yang",0,"123,456")')
             cursor.close()
             db.commit()
             db.close()
+            msgHandle.register(872702913,"3b2fce04224301f9db63a5443bc02869")
         self.userList = userList.userList()
         self.__address = address
         self.__port = port
