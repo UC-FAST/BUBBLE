@@ -18,12 +18,12 @@ class serverProtocol(Enum):
     refile = 13  # 文件
     reinfo = 14  # 服务器端消息
     reheartbeat = 15  # 维持心跳
-    
 
 
 class infoProtocol(Enum):
     invaildMessage = 0
-    contentLength=1
+    contentLength = 1
     friendList = 2
-    addFriend=3
-    userRegister=4
+    addFriend = 3
+    userRegister = 4
+    serverTips = 5

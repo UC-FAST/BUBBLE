@@ -30,8 +30,8 @@ class userHandle():
 
     def getFriendList(self):
         msg = self.user.send(clientProtocol.info, self.userID, {'infoProtocol': infoProtocol.friendList.value})
-        self.friendList.update(msg['content']['msg']['friendList'])
-        return self.friendList
+        #self.friendList.update(msg['content']['msg']['friendList'])
+        return msg['content']['msg']['friendList']
 
     def userRegister(self, userID, password):
         userID = int(userID)

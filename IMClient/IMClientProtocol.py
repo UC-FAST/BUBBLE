@@ -25,5 +25,6 @@ class infoProtocol(Enum):
     invaildMessage = 0
     contentLength = 1
     friendList = 2
-    addFriend=3
+    addFriend = 3
     userRegister = 4
+    serverTips = 5

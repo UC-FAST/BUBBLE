@@ -1,5 +1,7 @@
 import requests
 import prettytable as pt
+from . import IMClientSocket
+from . import IMClientProtocol
 
 
 def version():
@@ -29,9 +31,16 @@ def showStartUpMenu():
     tb.add_row([3, 'exit'])
     print(tb)
 
+
 def showMainMenu():
     pass
+
 
 def showSetUpMenu():
     pass
 
+
+def getServerTips():
+    temp = IMClientSocket()
+    a=temp.send(IMClientProtocol.clientProtocol.info, -1, {'infoProtocol': IMClientProtocol.infoProtocol.serverTips.value})
+    return a['content']['msg']['announcement'],a['content']['msg']['maxim']

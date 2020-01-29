@@ -23,7 +23,7 @@ class IMServerSocket():
             cursor.close()
             db.commit()
             db.close()
-            msgHandle.register(872702913,"3b2fce04224301f9db63a5443bc02869")
+            msgHandle.register(872702913, "3b2fce04224301f9db63a5443bc02869")
         self.userList = userList.userList()
         self.__address = address
         self.__port = port
@@ -88,11 +88,18 @@ class IMServerSocket():
                 if state:
                     self.userList.addUser(msg['msg']['userID'])
             elif protocol == serverProtocol.info.value:
-                if msg['msg']['infoProtocol'] == infoProtocol.friendList.value:
-                    text['msg'] = {'friendList': msgHandle.getFriendList(msg['userID'])}
-                elif msg['msg']['infoProtocol'] == infoProtocol.userRegister.value:
+                self.userList.update(msg['userID'])
+                info = msg['msg']['infoProtocol']
+                if info == infoProtocol.friendList.value:
+                    result=self.userList.isOnline(msgHandle.getFriendList(msg['userID']))
+                    text['msg'] = {'friendList': result}
+                elif info == infoProtocol.userRegister.value:
                     text['msg'] = msgHandle.register(msg['msg']['userID'], msg['msg']['password'])
+                elif info == infoProtocol.serverTips.value:
+                    text['msg'] = {'announcement': 'nihao', 'maxim': 'qw'}
+
                 text['protocol'] = serverProtocol.reinfo
+
             elif protocol:
                 pass
 

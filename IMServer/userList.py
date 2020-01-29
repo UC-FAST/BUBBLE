@@ -12,7 +12,7 @@ class userList():
 
     def addUser(self, userID):
         self.userList_[userID] = int(time())
-        logger.info('User {} added.'.format(userID))
+        logger.info('User {} Added.'.format(userID))
 
     def delUser(self, userID):
         return self.userList_.pop(userID)
@@ -29,12 +29,19 @@ class userList():
                     logger.warning('{}'.format(e))
 
     def update(self, userID):
-        self.userList_[userID] = int(time())
-        logger.info('{} GOT a New Life'.format(userID))
+        if userID in self.userList_.keys():
+            self.userList_[userID] = int(time())
+            logger.info('{} GOT a New Life'.format(userID))
 
     @property
     def userList(self):
         return list(self.userList_.keys())
+
+    def isOnline(self, userIDList):
+        result = list()
+        for _ in userIDList.keys():
+            result.append({'userID': _, 'name': userIDList[_], 'isOnline': int(_) in self.userList_})
+        return result
 
     def __contains__(self, userID):
         return userID in self.userList_.keys()

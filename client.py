@@ -5,6 +5,7 @@ if __name__ == '__main__':
     while True:
         try:
             im.welcome()
+            print(im.getServerTips())
             im.showStartUpMenu()
             choice = input('>')
             a = im.userHandle()
