@@ -1,6 +1,8 @@
+import sqlite3
+from os.path import exists
+import prettytable as pt
 from IMClient.IMClientProtocol import *
 from IMClient.IMClientSocket import IMClientSocket
-from IMClient.clientAuthorize import *
 from IMClient.clientAuthorize import md5Calc
 
 
@@ -17,22 +19,34 @@ class userHandle():
         self.friendList = dict()
 
     def login(self, userID, password):
-        userID=int(userID)
+        userID = int(userID)
         msg = self.userSocket.send(clientProtocol.login, userID, {'userID': userID, 'password': md5Calc(password)})
         if msg['content']['protocol'] == clientProtocol.reinfo.value:
             if msg['content']['msg']['infoProtocol'] == infoProtocol.invaildMessage.value:
                 return
-        if msg['content']['msg']['login']:
+        if msg['content']['msg']['login']:  # 登录成功
             self.userID = userID
             self.isLogin = True
+            if not exists('{}.db'.format(self.userID)):
+                db = sqlite3.connect('{}.db'.format(self.userID))
+                cursor = db.cursor()
+                cursor.execute('CREATE TABLE message(time,fromUser,msg,type)')
+                cursor.close()
+                db.commit()
+                db.close()
             return self.isLogin
         else:
             raise loginError
 
     def getFriendList(self):
         msg = self.userSocket.send(clientProtocol.info, self.userID, {'infoProtocol': infoProtocol.friendList.value})
-        #self.friendList.update(msg['content']['msg']['friendList'])
-        return msg['content']['msg']['friendList']
+        tb = pt.PrettyTable()
+        tb.junction_char = '-'
+        print('Friend List')
+        tb.field_names = ['No.', 'ID', 'Name', 'isOnline']
+        for index, _ in enumerate(msg['content']['msg']['friendList'], start=1):
+            tb.add_row([index, _['userID'], _['name'], _['isOnline']])
+        return tb
 
     def userRegister(self, userID, password):
         userID = int(userID)
@@ -47,6 +61,22 @@ class userHandle():
         return '<User: {} isLogin: {}'.format(self.userID, self.isLogin)
 
     def getNewMsg(self):
-        msg=self.userSocket.send(clientProtocol.heartbeat,self.userID,None)
-        return msg['content']
-        
+        msg = self.userSocket.send(clientProtocol.enquire, self.userID, None)
+        if self.storageMsg(msg['content']['msg']):
+            return self.delServerMsg()
+
+    def delServerMsg(self):
+        state = self.userSocket.send(clientProtocol.info, self.userID, {'infoProtocol': infoProtocol.delMsg.value})
+        return state['content']['msg']['state']
+
+    def storageMsg(self, msg):
+        db = sqlite3.connect('{}.db'.format(self.userID))
+        cursor = db.cursor()
+        for timeStamp in msg.keys():
+            for msgGroup in msg[timeStamp]:
+                cursor.execute('INSERT INTO message(time, fromUser, msg, type) VALUES (?,?,?,?)',
+                               (timeStamp, msgGroup['fromUser'], msgGroup['msg'], msgGroup['type']))
+        cursor.close()
+        db.commit()
+        db.close()
+        return True

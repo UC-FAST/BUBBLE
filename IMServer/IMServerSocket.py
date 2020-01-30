@@ -19,14 +19,14 @@ class IMServerSocket():
             cursor = db.cursor()
             cursor.execute('CREATE TABLE userAuthorize(id PRIMARY KEY NOT NULL ,password TEXT(32))')
             cursor.execute('CREATE TABLE userInfo(id PRIMARY KEY NOT NULL ,name,sex INTEGER,friends)')
-            cursor.execute('CREATE TABLE userMsg(toUser ,fromUser,time,msg)')
+            cursor.execute('CREATE TABLE userMsg(toUser ,fromUser,time,msg,type)')
             cursor.close()
             db.commit()
             db.close()
             msgHandle.register(872702913, "3b2fce04224301f9db63a5443bc02869")
             msgHandle.register(12, "121212")
             msgHandle.addFriend(872702913, 12)
-            msgHandle.storageMsg(12,872702913,1213,'wewe')
+            msgHandle.storageMsg(12, 872702913, 1213, 'wewe')
         self.userList = userList.userList()
         self.__address = address
         self.__port = port
@@ -100,12 +100,14 @@ class IMServerSocket():
                     text['msg'] = msgHandle.register(msg['msg']['userID'], msg['msg']['password'])
                 elif info == infoProtocol.serverTips.value:
                     text['msg'] = {'announcement': 'nihao', 'maxim': 'qw'}
+                elif info == infoProtocol.delMsg.value:
+                    msgHandle.delMessage(msg['userID'])
+                    text['msg'] = {'state': True}
 
                 text['protocol'] = serverProtocol.reinfo
-            elif protocol == serverProtocol.heartbeat.value:
-
-                text['msg'] = None
-                text['protocol'] = serverProtocol.reheartbeat
+            elif protocol == serverProtocol.enquire.value:
+                text['msg'] = msgHandle.getNewMsg(msg['userID'])
+                text['protocol'] = serverProtocol.reenquire
             elif protocol:
                 pass
 

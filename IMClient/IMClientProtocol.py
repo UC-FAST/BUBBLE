@@ -28,3 +28,4 @@ class infoProtocol(Enum):
     addFriend = 3
     userRegister = 4
     serverTips = 5
+    delMsg=6

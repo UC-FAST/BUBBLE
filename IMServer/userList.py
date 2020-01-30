@@ -1,6 +1,8 @@
 from time import time
 import logging
 
+from .msgHandle import getUserInfo
+
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
@@ -43,8 +45,8 @@ class userList():
 
     def isOnline(self, userIDList):
         result = list()
-        for _ in userIDList.keys():
-            result.append({'userID': _, 'name': userIDList[_], 'isOnline': int(_) in self._userList_})
+        for _ in userIDList:
+            result.append({'userID': _, 'name': getUserInfo(_)[1], 'isOnline': int(_) in self._userList_})
         return result
 
     def __contains__(self, userID):
