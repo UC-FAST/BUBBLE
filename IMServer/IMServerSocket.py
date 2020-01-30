@@ -19,11 +19,14 @@ class IMServerSocket():
             cursor = db.cursor()
             cursor.execute('CREATE TABLE userAuthorize(id PRIMARY KEY NOT NULL ,password TEXT(32))')
             cursor.execute('CREATE TABLE userInfo(id PRIMARY KEY NOT NULL ,name,sex INTEGER,friends)')
-            cursor.execute('CREATE TABLE userMSG(toUser PRIMARY KEY NOT NULL ,msg,fromUser,time)')
+            cursor.execute('CREATE TABLE userMsg(toUser ,fromUser,time,msg)')
             cursor.close()
             db.commit()
             db.close()
             msgHandle.register(872702913, "3b2fce04224301f9db63a5443bc02869")
+            msgHandle.register(12, "121212")
+            msgHandle.addFriend(872702913, 12)
+            msgHandle.storageMsg(12,872702913,1213,'wewe')
         self.userList = userList.userList()
         self.__address = address
         self.__port = port
@@ -81,6 +84,7 @@ class IMServerSocket():
         if isVaildData(msg):  # 数据合法性校验
             msg = msg['content']
             protocol = msg['protocol']
+            self.userList.update(msg['userID'])
             if protocol == serverProtocol.login.value:  # 登录
                 state = msgHandle.loginAuthorize(msg['msg']['userID'], msg['msg']['password'])
                 text['msg'] = {'login': state}
@@ -88,10 +92,9 @@ class IMServerSocket():
                 if state:
                     self.userList.addUser(msg['msg']['userID'])
             elif protocol == serverProtocol.info.value:
-                self.userList.update(msg['userID'])
                 info = msg['msg']['infoProtocol']
                 if info == infoProtocol.friendList.value:
-                    result=self.userList.isOnline(msgHandle.getFriendList(msg['userID']))
+                    result = self.userList.isOnline(msgHandle.getFriendList(msg['userID']))
                     text['msg'] = {'friendList': result}
                 elif info == infoProtocol.userRegister.value:
                     text['msg'] = msgHandle.register(msg['msg']['userID'], msg['msg']['password'])
@@ -99,7 +102,10 @@ class IMServerSocket():
                     text['msg'] = {'announcement': 'nihao', 'maxim': 'qw'}
 
                 text['protocol'] = serverProtocol.reinfo
+            elif protocol == serverProtocol.heartbeat.value:
 
+                text['msg'] = None
+                text['protocol'] = serverProtocol.reheartbeat
             elif protocol:
                 pass
 

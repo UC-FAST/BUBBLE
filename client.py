@@ -14,6 +14,7 @@ if __name__ == '__main__':
                 pwd = input('Password: ')
                 print(a.login(872702913, '(imp@h01)'))
                 print(a.getFriendList())
+                print(a.getNewMsg())
                 im.showMainMenu()
                 choice = input('>')
             if choice == '2':

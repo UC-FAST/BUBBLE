@@ -11,13 +11,14 @@ class loginError(Exception):
 
 class userHandle():
     def __init__(self):
-        self.user = IMClientSocket()
+        self.userSocket = IMClientSocket()
         self.userID = None
         self.isLogin = False
         self.friendList = dict()
 
     def login(self, userID, password):
-        msg = self.user.send(clientProtocol.login, userID, {'userID': userID, 'password': md5Calc(password)})
+        userID=int(userID)
+        msg = self.userSocket.send(clientProtocol.login, userID, {'userID': userID, 'password': md5Calc(password)})
         if msg['content']['protocol'] == clientProtocol.reinfo.value:
             if msg['content']['msg']['infoProtocol'] == infoProtocol.invaildMessage.value:
                 return
@@ -29,13 +30,13 @@ class userHandle():
             raise loginError
 
     def getFriendList(self):
-        msg = self.user.send(clientProtocol.info, self.userID, {'infoProtocol': infoProtocol.friendList.value})
+        msg = self.userSocket.send(clientProtocol.info, self.userID, {'infoProtocol': infoProtocol.friendList.value})
         #self.friendList.update(msg['content']['msg']['friendList'])
         return msg['content']['msg']['friendList']
 
     def userRegister(self, userID, password):
         userID = int(userID)
-        msg = self.user.send(
+        msg = self.userSocket.send(
             clientProtocol.info,
             userID,
             {'infoProtocol': infoProtocol.userRegister.value, 'userID': userID, 'password': md5Calc(password)}
@@ -44,3 +45,8 @@ class userHandle():
 
     def __repr__(self):
         return '<User: {} isLogin: {}'.format(self.userID, self.isLogin)
+
+    def getNewMsg(self):
+        msg=self.userSocket.send(clientProtocol.heartbeat,self.userID,None)
+        return msg['content']
+        

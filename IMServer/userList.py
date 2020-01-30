@@ -7,41 +7,48 @@ logger = logging.getLogger(__name__)
 
 class userList():
     def __init__(self, timeout=60):
-        self.userList_ = dict()
+        self._userList_ = dict()
         self.timeout = timeout
 
     def addUser(self, userID):
-        self.userList_[userID] = int(time())
+        self._userList_[userID] = int(time())
         logger.info('User {} Added.'.format(userID))
 
     def delUser(self, userID):
-        return self.userList_.pop(userID)
+        return self._userList_.pop(userID)
 
     def cleanUp(self):
         now = int(time())
-        keys = list(self.userList_.keys())
+        keys = list(self._userList_.keys())
         for index in keys:
-            if now - self.userList_[index] > self.timeout:
+            if now - self._userList_[index] > self.timeout:
                 try:
                     self.delUser(index)
-                    logger.info('User {} Screamed Ahhhhh!'.format(index))
+                    logger.info('The Server Killed {}, User {} Screamed Ahhhhh!'.format(index, index))
+                    if len(self._userList_.keys()) == 0:
+                        logger.info('So No One is Online Now.')
+                    else:
+                        logger.info("We have {} User(s) Online".format(len(self._userList_.keys())))
                 except Exception as e:
                     logger.warning('{}'.format(e))
 
     def update(self, userID):
-        if userID in self.userList_.keys():
-            self.userList_[userID] = int(time())
+        if userID in self._userList_.keys():
+            self._userList_[userID] = int(time())
             logger.info('{} GOT a New Life'.format(userID))
 
     @property
     def userList(self):
-        return list(self.userList_.keys())
+        return list(self._userList_.keys())
 
     def isOnline(self, userIDList):
         result = list()
         for _ in userIDList.keys():
-            result.append({'userID': _, 'name': userIDList[_], 'isOnline': int(_) in self.userList_})
+            result.append({'userID': _, 'name': userIDList[_], 'isOnline': int(_) in self._userList_})
         return result
 
     def __contains__(self, userID):
-        return userID in self.userList_.keys()
+        return userID in self._userList_.keys()
+
+    def __len__(self):
+        return len(self._userList_.keys())

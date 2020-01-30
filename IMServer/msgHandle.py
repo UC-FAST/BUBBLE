@@ -2,6 +2,7 @@
 
 import sqlite3
 import json
+from collections import defaultdict
 
 
 def loginAuthorize(userID, password):
@@ -21,12 +22,15 @@ def loginAuthorize(userID, password):
 def getUserName(userID):
     db = sqlite3.connect('IMServerUser.db')
     cursor = db.cursor()
-    cursor.execute('SELECT name FROM userInfo WHERE id=?', (userID,))
-    name = cursor.fetchall()[0][0]
-    cursor.close()
-    db.commit()
-    db.close()
-    return name
+    try:
+        cursor.execute('SELECT name FROM userInfo WHERE id=?', (userID,))
+        return cursor.fetchall()[0][0]
+    except sqlite3.OperationalError:
+        return False
+    finally:
+        cursor.close()
+        db.commit()
+        db.close()
 
 
 def register(userID, password):
@@ -50,6 +54,7 @@ def changeName(userID, name):
     cursor.close()
     db.commit()
     db.close()
+    return True
 
 
 def changeSex(userID, sex):
@@ -59,23 +64,30 @@ def changeSex(userID, sex):
     cursor.close()
     db.commit()
     db.close()
+    return True
 
 
-def changePassword(userID, password):
+def changePassword(userID, oldPassword, newPassword):
     db = sqlite3.connect('IMServerUser.db')
     cursor = db.cursor()
-    cursor.execute('UPDATE userAuthorize SET password=? WHERE id=?', (password, userID))
-    cursor.close()
-    db.commit()
-    db.close()
+    cursor.execute('SELECT password FROM userAuthorize WHERE id=?', (userID,))
+    if oldPassword == cursor.fetchall()[0][0]:
+        cursor.execute('UPDATE userAuthorize SET password=? WHERE id=?', (newPassword, userID))
+        cursor.close()
+        db.commit()
+        db.close()
+        return True
+    else:
+        return False
 
 
-def addFriend(userID, *friend):
+def addFriend(userID, friends):
+    friends = tuple(friends)
     db = sqlite3.connect('IMServerUser.db')
     cursor = db.cursor()
     cursor.execute('SELECT friends FROM userInfo WHERE id=?', (userID,))
     friendList = json.loads(cursor.fetchall()[0][0])
-    for _ in friend:
+    for _ in friends:
         if not hasUser(_):
             cursor.close()
             db.rollback()
@@ -110,3 +122,34 @@ def getFriendList(userID):
     db.commit()
     db.close()
     return json.loads(result)
+
+
+def getNewMsg(userID):
+    db = sqlite3.connect('IMServerUser.db')
+    cursor = db.cursor()
+    cursor.execute('SELECT fromUser, time, msg FROM userMsg WHERE toUser=?', (userID,))
+    result = defaultdict(list)
+    for fromUser, time, msg in cursor.fetchall():
+        result[time].append({'fromUser': fromUser, 'msg': msg})
+    cursor.close()
+    db.commit()
+    db.close()
+    return json.dumps(result)
+
+
+def storageMsg(fromUser, toUser, time, msg):
+    db = sqlite3.connect('IMServerUser.db')
+    cursor = db.cursor()
+    cursor.execute('INSERT INTO userMsg(toUser, fromUser, time, msg) VALUES (?,?,?,?)', (toUser, fromUser, time, msg))
+    cursor.close()
+    db.commit()
+    db.close()
+
+
+def delMessage(toUser):
+    db = sqlite3.connect('IMServerUser.db')
+    cursor = db.cursor()
+    cursor.execute('DELETE FROM userMsg WHERE toUser=?', (toUser,))
+    cursor.close()
+    db.commit()
+    db.close()
