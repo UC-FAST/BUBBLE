@@ -15,21 +15,17 @@ if __name__ == '__main__':
                 pwd = input('Password: ')
                 print(a.login(872702913, '(imp@h01)'))
                 print(a.getFriendList())
-                print(a.getNewMsg())
-                #print(a.sendPicture('1.png'))
-                sleep(2)
+                a.sendMsg(872702913,'wew')
+                a.getNewMsg()
             if choice == '2':
                 print('23')
                 userID = input('User ID: ')
                 pwd = input('Password: ')
-                msg=a.userRegister(userID, pwd)
+                msg = a.userRegister(userID, pwd)
                 print(msg)
-
 
             if choice == '3':
                 exit(0)
 
         except loginError:
             print('登录失败，请检查账号和密码')
-
-

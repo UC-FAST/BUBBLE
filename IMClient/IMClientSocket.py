@@ -22,7 +22,7 @@ class IMClientSocket:
         self._socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self._socket.bind(('127.0.0.1', 5280))
         self._socket.connect((self.__address, self.__port))
-        recv = None
+        recv=None
         for i in msg:
             self._socket.sendall(i)  # 第一次发送数据包长度消息，第二次发送数据包
             recv = self._socket.recv(1024).decode('UTF-8')  # 第一次接收服务器占位消息，第二次接收服务器数据包长度消息

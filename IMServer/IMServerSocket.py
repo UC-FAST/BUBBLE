@@ -20,14 +20,14 @@ class IMServerSocket():
             cursor = db.cursor()
             cursor.execute('CREATE TABLE userAuthorize(id PRIMARY KEY NOT NULL ,password TEXT(32))')
             cursor.execute('CREATE TABLE userInfo(id PRIMARY KEY NOT NULL ,name,sex INTEGER,friends)')
-            cursor.execute('CREATE TABLE userMsg(toUser ,fromUser,time,msg,type)')
+            cursor.execute('CREATE TABLE userMsg(toUser,fromUser,time,msg,type,fileName default NULL)')
             cursor.close()
             db.commit()
             db.close()
             msgHandle.register(872702913, "3b2fce04224301f9db63a5443bc02869")
             msgHandle.register(12, "121212")
             msgHandle.addFriend(872702913, 12)
-            msgHandle.storageMsg(12, 872702913, 1213, 'wewe')
+            msgHandle.storageMsg(12, 872702913, 1213, 'wewe', serverProtocol.text.value, None)
         self.userList = userList.userList()
         self.__address = address
         self.__port = port
@@ -77,13 +77,13 @@ class IMServerSocket():
             skt.close()
 
     def handle(self, msg):
+        # {'content': {'msg': {'infoProtocol': 5}, 'userID': -1, 'protocol': 6, 'time': 1580475048.316727},'hash': 'b71e4997224519dcc4466858ce3bfe7a'}
         if not msg:
             return None
-        logging.info('Message {}'.format(msg))
         msg = json.loads(msg)
+        logging.info('Message From {} Protocol {}'.format(msg['content']['userID'], msg['content']['protocol']))
         text = dict()
         if isVaildData(msg):  # 数据合法性校验
-
             msg = msg['content']
             protocol = msg['protocol']
             self.userList.update(msg['userID'])
@@ -105,21 +105,33 @@ class IMServerSocket():
                 elif info == infoProtocol.delMsg.value:
                     msgHandle.delMessage(msg['userID'])
                     text['msg'] = {'state': True}
-
                 text['protocol'] = serverProtocol.reinfo
             elif protocol == serverProtocol.enquire.value:
                 text['msg'] = msgHandle.getNewMsg(msg['userID'])
                 text['protocol'] = serverProtocol.reenquire
-            elif protocol == serverProtocol.pict:
-                print(msg['msg']['format'])
+            elif protocol == serverProtocol.pict.value:
+                msgHandle.storageMsg(msg['userID'], msg['msg']['toUser'], msg['time'], msg['msg']['content'],
+                                     serverProtocol.pict.value, msg['msg']['fileName'])
+                text['msg'] = True
+                text['protocol'] = serverProtocol.repict.value
+            elif protocol == serverProtocol.file.value:
+                pass
+            elif protocol == serverProtocol.voice.value:
+                pass
+            elif protocol == serverProtocol.text.value:
+                msgHandle.storageMsg(msg['userID'], msg['msg']['toUser'], msg['time'], msg['msg']['content'],
+                                     serverProtocol.text.value, None)
+                text['msg'] = True
+                text['protocol'] = serverProtocol.retext.value
             elif protocol:
                 pass
 
-            text['user'] = 0  # 服务器ID为0
-            text['time'] = time.time()
+
         else:
             text['msg'] = {'infoProtocol': infoProtocol.invaildMessage}
             text['protocol'] = serverProtocol.reinfo
+        text['user'] = 0  # 服务器ID为0
+        text['time'] = time.time()
         text = packUp(text)
-        logging.info('Return {}'.format(str(text)))
+        # logging.info('Return {}'.format(str(text)))
         return dumps(text)

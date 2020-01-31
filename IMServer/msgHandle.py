@@ -92,8 +92,8 @@ def addFriend(userID, *friends):
             db.rollback()
             db.close()
             return False
-        friendList.append( getUserInfo(_)[0])
-        friendList=list(set(friendList))
+        friendList.append(getUserInfo(_)[0])
+        friendList = list(set(friendList))
     friendList = json.dumps(friendList)
     cursor.execute('UPDATE userInfo SET friends=? WHERE id=?', (friendList, userID))
     cursor.close()
@@ -127,21 +127,21 @@ def getFriendList(userID):
 def getNewMsg(userID):
     db = sqlite3.connect('IMServerUser.db')
     cursor = db.cursor()
-    cursor.execute('SELECT fromUser, time, msg,type FROM userMsg WHERE toUser=?', (userID,))
+    cursor.execute('SELECT fromUser, time, msg,type,fileName FROM userMsg WHERE toUser=?', (userID,))
     result = defaultdict(list)
-    for fromUser, timeStamp, msg, msgType in cursor.fetchall():
-        result[timeStamp].append({'fromUser': fromUser, 'msg': msg, 'type': msgType})
+    for fromUser, timeStamp, msg, msgType, fileName in cursor.fetchall():
+        result[timeStamp].append({'fromUser': fromUser, 'msg': msg, 'type': msgType, 'fileName': fileName})
     cursor.close()
     db.commit()
     db.close()
     return result
 
 
-def storageMsg(fromUser, toUser, time, msg, type=0):
+def storageMsg(fromUser, toUser, time, msg, type, fileName):
     db = sqlite3.connect('IMServerUser.db')
     cursor = db.cursor()
-    cursor.execute('INSERT INTO userMsg(toUser, fromUser, time, msg,type) VALUES (?,?,?,?,?)',
-                   (toUser, fromUser, time, msg, type))
+    cursor.execute('INSERT INTO userMsg(toUser, fromUser, time, msg,type,fileName) VALUES (?,?,?,?,?,?)',
+                   (toUser, fromUser, time, msg, type, fileName))
     cursor.close()
     db.commit()
     db.close()

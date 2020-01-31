@@ -22,11 +22,9 @@ class userList():
         return self._userList_.pop(userID)
 
     def cleanUp(self):
-        print(1)
         with self.__lock:
             now = int(time())
             keys = list(self._userList_.keys())
-            print(2)
             for index in keys:
                 if now - self._userList_[index] > self.timeout:
                     try:

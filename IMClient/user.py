@@ -32,7 +32,7 @@ class userHandle():
             if not exists('{}.db'.format(self.userID)):
                 db = sqlite3.connect('{}.db'.format(self.userID))
                 cursor = db.cursor()
-                cursor.execute('CREATE TABLE message(time,fromUser,msg,type)')
+                cursor.execute('CREATE TABLE message(time,fromUser,msg,type,fileName)')
                 cursor.close()
                 db.commit()
                 db.close()
@@ -76,42 +76,47 @@ class userHandle():
         cursor = db.cursor()
         for timeStamp in msg.keys():
             for msgGroup in msg[timeStamp]:
-                cursor.execute('INSERT INTO message(time, fromUser, msg, type) VALUES (?,?,?,?)',
-                               (timeStamp, msgGroup['fromUser'], msgGroup['msg'], msgGroup['type']))
+                cursor.execute('INSERT INTO message(time, fromUser, msg, type,fileName) VALUES (?,?,?,?,?)',
+                               (timeStamp, msgGroup['fromUser'], msgGroup['msg'], msgGroup['type'],
+                                msgGroup['fileName']))
         cursor.close()
         db.commit()
         db.close()
         return True
 
-    def sendMsg(self, msg):
-        msg = self.userSocket.send(clientProtocol.text, self.userID, {'msg': msg})
+    def sendMsg(self, toUser, msg):
+        msg = self.userSocket.send(clientProtocol.text, self.userID,
+                                   {'content': base64.b64encode(msg.encode()).decode(), 'toUser': toUser})
         return msg
 
-    def sendPicture(self, filename):
+    def sendPicture(self, toUser, filename):
         with open(filename, 'rb') as f:
             file = f.read()
         msg = self.userSocket.send(clientProtocol.pict, self.userID, {
-            'format': splitext(filename)[1][1:],
             'fileName': '{}-{}'.format(self.userID, filename),
-            'pict': base64.b64encode(file).decode()})
+            'content': base64.b64encode(file).decode(),
+            'toUser': toUser
+        })
         return msg
 
-    def sendFile(self, filename):
+    def sendFile(self, toUser, filename):
         with open(filename, 'rb') as f:
             file = f.read()
         msg = self.userSocket.send(clientProtocol.file, self.userID, {
-            'format': splitext(filename)[1][1:],
             'fileName': '{}-{}'.format(self.userID, filename),
-            'file': base64.b64encode(file).decode()})
+            'content': base64.b64encode(file).decode(),
+            'toUser': toUser
+        })
         return msg
 
-    def sendVoice(self, filename):
+    def sendVoice(self, toUser, filename):
         with open(filename, 'rb') as f:
             file = f.read()
         msg = self.userSocket.send(clientProtocol.voice, self.userID, {
-            'format': splitext(filename)[1][1:],
             'fileName': '{}-{}'.format(self.userID, filename),
-            'file': base64.b64encode(file).decode()})
+            'content': base64.b64encode(file).decode(),
+            'toUser': toUser
+        })
         return msg
 
     def getServerTips(self):
