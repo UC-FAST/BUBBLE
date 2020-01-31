@@ -1,22 +1,23 @@
 import IMClient as im
+from time import sleep
 from IMClient.user import loginError
 
 if __name__ == '__main__':
     while True:
         try:
             im.welcome()
-            print(im.getServerTips())
+            a = im.userHandle()
+            print(a.getServerTips())
             im.showStartUpMenu()
             choice = input('>')
-            a = im.userHandle()
             if choice == '1':
                 id = input('User ID: ')
                 pwd = input('Password: ')
                 print(a.login(872702913, '(imp@h01)'))
                 print(a.getFriendList())
                 print(a.getNewMsg())
-                im.showMainMenu()
-                choice = input('>')
+                #print(a.sendPicture('1.png'))
+                sleep(2)
             if choice == '2':
                 print('23')
                 userID = input('User ID: ')
@@ -30,3 +31,5 @@ if __name__ == '__main__':
 
         except loginError:
             print('登录失败，请检查账号和密码')
+
+

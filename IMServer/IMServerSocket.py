@@ -2,6 +2,7 @@ import socket
 import sqlite3
 import time
 import logging
+import base64
 from os.path import exists
 from IMServer.IMServerProtocol import *
 from IMServer.serverAuthorize import *
@@ -108,6 +109,8 @@ class IMServerSocket():
             elif protocol == serverProtocol.enquire.value:
                 text['msg'] = msgHandle.getNewMsg(msg['userID'])
                 text['protocol'] = serverProtocol.reenquire
+            elif protocol == serverProtocol.pict:
+                print(msg['msg']['format'])
             elif protocol:
                 pass
 

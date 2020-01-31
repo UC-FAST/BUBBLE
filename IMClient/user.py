@@ -1,5 +1,7 @@
 import sqlite3
+import base64
 from os.path import exists
+from os.path import splitext
 import prettytable as pt
 from IMClient.IMClientProtocol import *
 from IMClient.IMClientSocket import IMClientSocket
@@ -80,3 +82,38 @@ class userHandle():
         db.commit()
         db.close()
         return True
+
+    def sendMsg(self, msg):
+        msg = self.userSocket.send(clientProtocol.text, self.userID, {'msg': msg})
+        return msg
+
+    def sendPicture(self, filename):
+        with open(filename, 'rb') as f:
+            file = f.read()
+        msg = self.userSocket.send(clientProtocol.pict, self.userID, {
+            'format': splitext(filename)[1][1:],
+            'fileName': '{}-{}'.format(self.userID, filename),
+            'pict': base64.b64encode(file).decode()})
+        return msg
+
+    def sendFile(self, filename):
+        with open(filename, 'rb') as f:
+            file = f.read()
+        msg = self.userSocket.send(clientProtocol.file, self.userID, {
+            'format': splitext(filename)[1][1:],
+            'fileName': '{}-{}'.format(self.userID, filename),
+            'file': base64.b64encode(file).decode()})
+        return msg
+
+    def sendVoice(self, filename):
+        with open(filename, 'rb') as f:
+            file = f.read()
+        msg = self.userSocket.send(clientProtocol.voice, self.userID, {
+            'format': splitext(filename)[1][1:],
+            'fileName': '{}-{}'.format(self.userID, filename),
+            'file': base64.b64encode(file).decode()})
+        return msg
+
+    def getServerTips(self):
+        a = self.userSocket.send(clientProtocol.info, -1, {'infoProtocol': infoProtocol.serverTips.value})
+        return a['content']['msg']['announcement'], a['content']['msg']['maxim']

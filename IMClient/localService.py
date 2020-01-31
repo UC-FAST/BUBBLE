@@ -40,7 +40,3 @@ def showSetUpMenu():
     pass
 
 
-def getServerTips():
-    temp = IMClientSocket()
-    a=temp.send(IMClientProtocol.clientProtocol.info, -1, {'infoProtocol': IMClientProtocol.infoProtocol.serverTips.value})
-    return a['content']['msg']['announcement'],a['content']['msg']['maxim']
