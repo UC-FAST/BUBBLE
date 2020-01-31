@@ -18,18 +18,19 @@ class userList():
             self._userList_[userID] = int(time())
         logger.info('User {} Added.'.format(userID))
 
-    def delUser(self, userID):
-        with self.__lock:
-            return self._userList_.pop(userID)
+    def __delUser(self, userID):
+        return self._userList_.pop(userID)
 
     def cleanUp(self):
+        print(1)
         with self.__lock:
             now = int(time())
             keys = list(self._userList_.keys())
+            print(2)
             for index in keys:
                 if now - self._userList_[index] > self.timeout:
                     try:
-                        self.delUser(index)
+                        self.__delUser(index)
                         logger.info('The Server Killed {}, User {} Screamed Ahhhhh!'.format(index, index))
                         if len(self._userList_.keys()) == 0:
                             logger.info('So No One is Online Now.')
