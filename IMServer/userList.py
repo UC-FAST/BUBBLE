@@ -1,6 +1,6 @@
 from time import time
 import logging
-
+import threading
 from .msgHandle import getUserInfo
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -11,33 +11,38 @@ class userList():
     def __init__(self, timeout=60):
         self._userList_ = dict()
         self.timeout = timeout
+        self.__lock = threading.Lock()
 
     def addUser(self, userID):
-        self._userList_[userID] = int(time())
+        with self.__lock:
+            self._userList_[userID] = int(time())
         logger.info('User {} Added.'.format(userID))
 
     def delUser(self, userID):
-        return self._userList_.pop(userID)
+        with self.__lock:
+            return self._userList_.pop(userID)
 
     def cleanUp(self):
-        now = int(time())
-        keys = list(self._userList_.keys())
-        for index in keys:
-            if now - self._userList_[index] > self.timeout:
-                try:
-                    self.delUser(index)
-                    logger.info('The Server Killed {}, User {} Screamed Ahhhhh!'.format(index, index))
-                    if len(self._userList_.keys()) == 0:
-                        logger.info('So No One is Online Now.')
-                    else:
-                        logger.info("We have {} User(s) Online".format(len(self._userList_.keys())))
-                except Exception as e:
-                    logger.warning('{}'.format(e))
+        with self.__lock:
+            now = int(time())
+            keys = list(self._userList_.keys())
+            for index in keys:
+                if now - self._userList_[index] > self.timeout:
+                    try:
+                        self.delUser(index)
+                        logger.info('The Server Killed {}, User {} Screamed Ahhhhh!'.format(index, index))
+                        if len(self._userList_.keys()) == 0:
+                            logger.info('So No One is Online Now.')
+                        else:
+                            logger.info("We have {} User(s) Online".format(len(self._userList_.keys())))
+                    except Exception as e:
+                        logger.warning('{}'.format(e))
 
     def update(self, userID):
-        if userID in self._userList_.keys():
-            self._userList_[userID] = int(time())
-            logger.info('{} GOT a New Life'.format(userID))
+        with self.__lock:
+            if userID in self._userList_.keys():
+                self._userList_[userID] = int(time())
+                logger.info('{} GOT a New Life'.format(userID))
 
     @property
     def userList(self):

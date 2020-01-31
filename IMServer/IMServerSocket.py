@@ -2,7 +2,7 @@ import socket
 import sqlite3
 import time
 import logging
-import base64
+import threading
 from os.path import exists
 from IMServer.IMServerProtocol import *
 from IMServer.serverAuthorize import *
@@ -35,12 +35,12 @@ class IMServerSocket():
         self._socket.bind((self.__address, self.__port))
 
     def userListCleanup(self):
-        while True:
-            time.sleep(30)
-            self.userList.cleanUp()
-            time.sleep(30)
+        self.userList.cleanUp()
+        t = threading.Timer(60, self.userListCleanup)
+        t.start()
 
     def mainLoop(self):
+
         """服务器套接字接收的主循环"""
         """我已经尽量将注释写清楚了，但仍然不建议修改代码"""
         """这是座屎山"""
@@ -83,6 +83,7 @@ class IMServerSocket():
         msg = json.loads(msg)
         text = dict()
         if isVaildData(msg):  # 数据合法性校验
+
             msg = msg['content']
             protocol = msg['protocol']
             self.userList.update(msg['userID'])

@@ -29,7 +29,7 @@ class IMClientSocket:
         self._socket.sendall(b'OK')  # 占位消息
         recv = json.loads(recv)
         msg = self._socket.recv(recv['content']['msg']['length'])
-        #self._socket.shutdown(2)
+        # self._socket.shutdown(2)
         return msg
 
     def send(self, protocol, userID, msg):
