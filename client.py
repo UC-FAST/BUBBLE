@@ -15,7 +15,8 @@ if __name__ == '__main__':
                 pwd = input('Password: ')
                 print(a.login(872702913, '(imp@h01)'))
                 print(a.getFriendList())
-                a.sendMsg(872702913,'wew')
+                #a.sendMsg(872702913,'wew')
+                a.sendPicture(872702913,'2.png')
                 a.getNewMsg()
             if choice == '2':
                 print('23')

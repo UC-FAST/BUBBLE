@@ -1,11 +1,11 @@
 import sqlite3
 import base64
 from os.path import exists
-from os.path import splitext
+
 import prettytable as pt
 from IMClient.IMClientProtocol import *
 from IMClient.IMClientSocket import IMClientSocket
-from IMClient.clientAuthorize import md5Calc
+from IMClient.clientAuthorize import md5Calc, getLocalTime
 
 
 class loginError(Exception):
@@ -122,3 +122,29 @@ class userHandle():
     def getServerTips(self):
         a = self.userSocket.send(clientProtocol.info, -1, {'infoProtocol': infoProtocol.serverTips.value})
         return a['content']['msg']['announcement'], a['content']['msg']['maxim']
+
+    def showFriendRequest(self):
+        self.getNewMsg()
+        db = sqlite3.connect('{}.db'.format(self.userID))
+        cursor = db.cursor()
+        cursor.execute('SELECT time,fromUser From message WHERE type=0')
+        result = cursor.fetchone()
+        while result:
+            time, fromUser = result
+            choice = input(
+                'AT {} {} Sent a Friend Request To You,Accept?(Y/N)'.format(getLocalTime(time), fromUser)
+            )
+            if choice == 'Y' or choice == 'y':
+                self.userSocket.send(
+                    clientProtocol.info, self.userID,
+                    {'infoProtocol': infoProtocol.addFriend.value, 'fromUser': fromUser}
+                )
+            cursor.execute('DELETE FROM message WHERE type=0 AND fromUser=?', (fromUser,))
+            result = cursor.fetchone()
+        cursor.close()
+        db.commit()
+        db.close()
+
+    def addFriend(self, toUser):
+        self.userSocket.send(clientProtocol.info, self.userID,
+                             {'infoProtocol': infoProtocol.friendRequest.value, 'toUser': toUser})

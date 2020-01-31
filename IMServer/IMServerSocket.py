@@ -25,8 +25,8 @@ class IMServerSocket():
             db.commit()
             db.close()
             msgHandle.register(872702913, "3b2fce04224301f9db63a5443bc02869")
-            msgHandle.register(12, "121212")
-            msgHandle.addFriend(872702913, 12)
+            msgHandle.register(12, "3b2fce04224301f9db63a5443bc02869")
+            # msgHandle.addFriend(872702913, 12)
             msgHandle.storageMsg(12, 872702913, 1213, 'wewe', serverProtocol.text.value, None)
         self.userList = userList.userList()
         self.__address = address
@@ -81,6 +81,7 @@ class IMServerSocket():
         if not msg:
             return None
         msg = json.loads(msg)
+        print(msg)
         logging.info('Message From {} Protocol {}'.format(msg['content']['userID'], msg['content']['protocol']))
         text = dict()
         if isVaildData(msg):  # 数据合法性校验
@@ -95,15 +96,24 @@ class IMServerSocket():
                     self.userList.addUser(msg['msg']['userID'])
             elif protocol == serverProtocol.info.value:
                 info = msg['msg']['infoProtocol']
+                print(info)
                 if info == infoProtocol.friendList.value:
                     result = self.userList.isOnline(msgHandle.getFriendList(msg['userID']))
                     text['msg'] = {'friendList': result}
                 elif info == infoProtocol.userRegister.value:
                     text['msg'] = msgHandle.register(msg['msg']['userID'], msg['msg']['password'])
                 elif info == infoProtocol.serverTips.value:
-                    text['msg'] = {'announcement': 'nihao', 'maxim': 'qw'}
+                    text['msg'] = {'announcement': 'BUBBLE内测上线.', 'maxim': 'Across the Great Wall we can reach every corner in the world.'}
                 elif info == infoProtocol.delMsg.value:
                     msgHandle.delMessage(msg['userID'])
+                    text['msg'] = {'state': True}
+                elif info == infoProtocol.addFriend.value:
+                    msgHandle.addFriend(msg['userID'], msg['msg']['fromUser'])
+                    msgHandle.addFriend(msg['msg']['fromUser'], msg['userID'])
+                    text['msg'] = {'state': True}
+                elif info == infoProtocol.friendRequest.value:
+                    print(msg['userID'])
+                    msgHandle.storageMsg(msg['userID'], msg['msg']['toUser'], msg['time'],msg=None, type=0, fileName=None)
                     text['msg'] = {'state': True}
                 text['protocol'] = serverProtocol.reinfo
             elif protocol == serverProtocol.enquire.value:
