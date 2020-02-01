@@ -1,7 +1,7 @@
 import time
 import socket
 import json
-import base64
+import threading
 from IMClient.IMClientProtocol import *
 from IMClient.clientAuthorize import md5Calc
 
@@ -16,8 +16,10 @@ class IMClientSocket:
     def __init__(self, address='127.0.0.1', port=8760):
         self.__address = address
         self.__port = port
+        self.__lock=threading.Lock()
 
     def __sendmsg(self, *msg):
+        self.__lock.acquire()
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self._socket.bind(('127.0.0.1', 5280))
@@ -30,6 +32,7 @@ class IMClientSocket:
         recv = json.loads(recv)
         msg = self._socket.recv(recv['content']['msg']['length'])
         # self._socket.shutdown(2)
+        self.__lock.release()
         return msg
 
     def send(self, protocol, userID, msg):

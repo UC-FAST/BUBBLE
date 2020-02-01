@@ -1,5 +1,6 @@
 import sqlite3
 import base64
+import threading
 from os.path import exists
 
 import prettytable as pt
@@ -32,7 +33,8 @@ class userHandle():
             if not exists('{}.db'.format(self.userID)):
                 db = sqlite3.connect('{}.db'.format(self.userID))
                 cursor = db.cursor()
-                cursor.execute('CREATE TABLE message(time,fromUser,msg,type,fileName)')
+                cursor.execute(
+                    'CREATE TABLE message(time REAL,fromUser INTEGER,msg,type INTEGER,fileName,isShown INTEGER DEFAULT 0)')
                 cursor.close()
                 db.commit()
                 db.close()
@@ -64,14 +66,14 @@ class userHandle():
 
     def getNewMsg(self):
         msg = self.userSocket.send(clientProtocol.enquire, self.userID, None)
-        if self.storageMsg(msg['content']['msg']):
+        if self.__storageMsg(msg['content']['msg']):
             return self.delServerMsg()
 
     def delServerMsg(self):
         state = self.userSocket.send(clientProtocol.info, self.userID, {'infoProtocol': infoProtocol.delMsg.value})
         return state['content']['msg']['state']
 
-    def storageMsg(self, msg):
+    def __storageMsg(self, msg):
         db = sqlite3.connect('{}.db'.format(self.userID))
         cursor = db.cursor()
         for timeStamp in msg.keys():
@@ -145,6 +147,42 @@ class userHandle():
         db.commit()
         db.close()
 
+    def recallMsg(self, fromUser, time=3):
+        self.getNewMsg()
+        fromUser = int(fromUser)
+        db = sqlite3.connect('{}.db'.format(self.userID))
+        cursor = db.cursor()
+        cursor.execute(
+            'SELECT time, fromUser, msg, fileName ,type FROM message WHERE type !=0 and fromUser=? and isShown=0',
+            (fromUser,))
+        msgGroup = cursor.fetchone()
+        while msgGroup:
+            timeStamp, fromUser, msg, fileName, msgType = msgGroup
+            if msgType == clientProtocol.text.value:
+                print('{}      {}'.format(getLocalTime(timeStamp), base64.b64decode(msg.encode()).decode()))
+                cursor.execute(
+                    'UPDATE message SET isShown=1 WHERE time=? AND fromUser=? AND msg=? AND type=?',
+                    (timeStamp, fromUser, msg, msgType))
+                db.commit()
+            if msgType == clientProtocol.pict.value:
+                print('{}      收到图片 {}'.format(getLocalTime(timeStamp), fileName))
+                with open(fileName, 'rw')as f:
+                    f.write(base64.b64decode(msg.encode()))
+            if msgType == clientProtocol.voice.value:
+                print('{}      收到一条语言消息 {}'.format(getLocalTime(timeStamp), fileName))
+                with open(fileName, 'rw')as f:
+                    f.write(base64.b64decode(msg.encode()))
+            if msgType == clientProtocol.file.value:
+                print('{}      收到文件 {}'.format(getLocalTime(timeStamp), fileName))
+                with open(fileName, 'rw')as f:
+                    f.write(base64.b64decode(msg.encode()))
+            msgGroup = cursor.fetchone()
+        cursor.close()
+        db.commit()
+        db.close()
+        threading.Timer(time, self.recallMsg, args=(fromUser, time)).start()
+
     def addFriend(self, toUser):
+        toUser = int(toUser)
         self.userSocket.send(clientProtocol.info, self.userID,
                              {'infoProtocol': infoProtocol.friendRequest.value, 'toUser': toUser})

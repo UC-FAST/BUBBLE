@@ -1,5 +1,4 @@
 import IMClient as im
-from time import sleep
 from IMClient.user import loginError
 
 if __name__ == '__main__':
@@ -11,21 +10,12 @@ if __name__ == '__main__':
             im.showStartUpMenu()
             choice = input('>')
             if choice == '1':
-                id = input('User ID: ')
-                pwd = input('Password: ')
-                print(a.login(872702913, '(imp@h01)'))
-                print(a.getFriendList())
-                #a.sendMsg(872702913,'wew')
-                a.sendPicture(872702913,'2.png')
-                a.getNewMsg()
-            if choice == '2':
-                print('23')
-                userID = input('User ID: ')
-                pwd = input('Password: ')
-                msg = a.userRegister(userID, pwd)
-                print(msg)
+                im.mainFunc(a)
 
-            if choice == '3':
+            elif choice == '2':
+                im.register(a)
+
+            elif choice == '3':
                 exit(0)
 
         except loginError:
