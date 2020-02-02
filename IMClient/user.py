@@ -15,8 +15,8 @@ class loginError(Exception):
 
 
 class userHandle():
-    def __init__(self):
-        self.userSocket = IMClientSocket()
+    def __init__(self,address,port):
+        self.userSocket = IMClientSocket(address,port)
         self.userID = None
         self.isLogin = False
         self.friendList = dict()

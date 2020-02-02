@@ -1,11 +1,14 @@
 import IMClient as im
+from os.path import exists
 from IMClient.user import loginError
 
 if __name__ == '__main__':
     while True:
         try:
+            if not exists('bubble.json'):
+                im.createConfigFile()
             im.welcome()
-            a = im.userHandle()
+            a = im.userHandle(im.readConfigFile()['server_address'], int(im.readConfigFile()['server_port']))
             print(a.getServerTips())
             im.showStartUpMenu()
             choice = input('>')

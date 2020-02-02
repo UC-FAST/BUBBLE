@@ -16,15 +16,25 @@ class IMClientSocket:
     def __init__(self, address='127.0.0.1', port=8760):
         self.__address = address
         self.__port = port
-        self.__lock=threading.Lock()
+        self.__lock = threading.Lock()
 
     def __sendmsg(self, *msg):
         self.__lock.acquire()
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self._socket.bind(('127.0.0.1', 5280))
-        self._socket.connect((self.__address, self.__port))
-        recv=None
+        #self._socket.bind(('', 5280))
+        a = 0
+        while True:
+            try:
+                a += 1
+                self._socket.connect((self.__address, self.__port))
+                break
+            except OSError:
+                print('等待端口释放，这通常需要一段时间')
+                print(a)
+                time.sleep(1)
+
+        recv = None
         for i in msg:
             self._socket.sendall(i)  # 第一次发送数据包长度消息，第二次发送数据包
             recv = self._socket.recv(1024).decode('UTF-8')  # 第一次接收服务器占位消息，第二次接收服务器数据包长度消息
@@ -32,7 +42,9 @@ class IMClientSocket:
         recv = json.loads(recv)
         msg = self._socket.recv(recv['content']['msg']['length'])
         # self._socket.shutdown(2)
+        self._socket.close()
         self.__lock.release()
+
         return msg
 
     def send(self, protocol, userID, msg):
