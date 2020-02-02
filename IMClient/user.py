@@ -2,7 +2,6 @@ import sqlite3
 import base64
 import threading
 from os.path import exists
-
 import prettytable as pt
 from IMClient.IMClientProtocol import *
 from IMClient.IMClientSocket import IMClientSocket
@@ -15,11 +14,11 @@ class loginError(Exception):
 
 
 class userHandle():
-    def __init__(self,address,port):
-        self.userSocket = IMClientSocket(address,port)
+    def __init__(self, address, port):
+        self.userSocket = IMClientSocket(address, port)
         self.userID = None
         self.isLogin = False
-        self.friendList = dict()
+        self.friendList = set()
 
     def login(self, userID, password):
         userID = int(userID)
@@ -49,6 +48,7 @@ class userHandle():
         print('Friend List')
         tb.field_names = ['No.', 'ID', 'Name', 'isOnline']
         for index, _ in enumerate(msg['content']['msg']['friendList'], start=1):
+            self.friendList.add(_['userID'])
             tb.add_row([index, _['userID'], _['name'], _['isOnline']])
         return tb
 
@@ -125,6 +125,9 @@ class userHandle():
         a = self.userSocket.send(clientProtocol.info, -1, {'infoProtocol': infoProtocol.serverTips.value})
         return a['content']['msg']['announcement'], a['content']['msg']['maxim']
 
+    def hasFriend(self, ID):
+        return ID in self.friendList
+
     def showFriendRequest(self):
         self.getNewMsg()
         db = sqlite3.connect('{}.db'.format(self.userID))
@@ -146,6 +149,7 @@ class userHandle():
         cursor.close()
         db.commit()
         db.close()
+        self.getFriendList()
 
     def recallMsg(self, fromUser, time=3):
         self.getNewMsg()
@@ -186,3 +190,10 @@ class userHandle():
         toUser = int(toUser)
         self.userSocket.send(clientProtocol.info, self.userID,
                              {'infoProtocol': infoProtocol.friendRequest.value, 'toUser': toUser})
+
+    def changePassword(self, oldPwd, newPwd):
+        return self.userSocket.send(clientProtocol.info, self.userID,
+                                    {'infoProtocol': infoProtocol.changePassword.value, 'oldPwd': md5Calc(oldPwd),
+                                     'newPwd': md5Calc(newPwd)
+                                     }
+                                    )['content']['msg']['state']

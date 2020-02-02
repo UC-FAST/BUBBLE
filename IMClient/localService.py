@@ -7,7 +7,7 @@ import time
 import prettytable as pt
 from . import user
 
-ver = 'v0.0.2'
+ver = 'v0.0.3'
 
 
 def version():
@@ -40,7 +40,7 @@ def downloadFile(name, url):
             count += len(chunk)
             if time.time() - time1 > 2:
                 p = count / length * 100
-                speed = (count - count_tmp) / 1024  / 2
+                speed = (count - count_tmp) / 1024 / 2
                 count_tmp = count
                 print(name + ': ' + formatFloat(p) + '%' + ' Speed: ' + formatFloat(speed) + 'Kb/S')
                 time1 = time.time()
@@ -131,14 +131,18 @@ def mainFunc(socket: user.userHandle):
             elif choice == '2':
                 friendSystem(socket)
             elif choice == '3':
-                friendSystem(socket)
+                personalSetUpSystem(socket)
         except KeyboardInterrupt:
             break
 
 
 def chatSystem(socket: user.userHandle):
     print(socket.getFriendList())
-    friendID = int(input('Input Friend ID :'))
+    while True:
+        friendID = int(input('Input Friend ID :'))
+        if socket.hasFriend(friendID):
+            break
+        print('用户{}不是你的好友。'.format(friendID))
     threading.Timer(3, socket.recallMsg, args=(friendID, 3)).start()
     print('chat with {}'.format(friendID))
     while True:
@@ -176,7 +180,19 @@ def friendSystem(socket: user.userHandle):
 
 
 def personalSetUpSystem(socket: user.userHandle):
-    pass
+    showMenu((['1', '更改用户名'], ['2', '更改性别'], ['3', '更改密码'], ['4', 'return']))
+    choice = input('>')
+    if choice == '1':
+        pass
+    if choice == '2':
+        pass
+    if choice == '3':
+        oldPassword = input('输入旧密码 :')
+        newPassword = input('输入新密码 :')
+        if socket.changePassword(oldPassword, newPassword):
+            print('Success')
+        else:
+            print('fail')
 
 
 def showSetUpMenu():

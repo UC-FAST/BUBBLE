@@ -29,3 +29,4 @@ class infoProtocol(Enum):
     serverTips = 5
     delMsg = 6
     friendRequest = 7
+    changePassword=8

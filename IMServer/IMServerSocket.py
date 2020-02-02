@@ -112,6 +112,9 @@ class IMServerSocket():
                     msgHandle.storageMsg(msg['userID'], msg['msg']['toUser'], msg['time'], msg=None, type=0,
                                          fileName=None)
                     text['msg'] = {'state': True}
+                elif info == infoProtocol.changePassword.value:
+                    text['msg'] = {
+                        'state': msgHandle.changePassword(msg['userID'], msg['msg']['oldPwd'], msg['msg']['newPwd'])}
                 text['protocol'] = serverProtocol.reinfo
             elif protocol == serverProtocol.enquire.value:
                 text['msg'] = msgHandle.getNewMsg(msg['userID'])
